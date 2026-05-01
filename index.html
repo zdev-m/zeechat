@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zee Chat - Gemini AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #111118;
+            --bg-tertiary: #1a1a26;
+            --bg-input: #0d0d16;
+            --text-primary: #e4e4ed;
+            --text-secondary: #9d9db5;
+            --text-muted: #5e5e78;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --accent-glow-strong: rgba(99, 102, 241, 0.5);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-focus: rgba(99, 102, 241, 0.5);
+            --radius: 14px;
+            --radius-lg: 18px;
+            --radius-sm: 10px;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            touch-action: manipulation;
+            -ms-touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            animation: slideDown 0.5s ease-out;
+            flex-shrink: 0;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .status-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .model-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-hover);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 8px 25px var(--accent-glow);
+        }
+
+        .apikey-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            flex-shrink: 0;
+        }
+
+        .apikey-bar i {
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        #apiKeyInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            min-width: 0;
+        }
+
+        #apiKeyInput::placeholder {
+            color: var(--text-muted);
+        }
+
+        .apikey-save-btn {
+            padding: 7px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .apikey-save-btn:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .apikey-save-btn.saved {
+            background: rgba(34, 197, 94, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .apikey-save-btn.error {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .chat-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            margin: 4px 0 12px;
+            padding-right: 4px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
+        }
+
+        .chat-wrapper::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-wrapper::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .messages-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-height: 100%;
+            justify-content: flex-end;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .empty-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: msgSlideIn 0.35s ease-out;
+            max-width: 88%;
+        }
+
+        @keyframes msgSlideIn {
+            from { transform: translateY(16px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+            margin-left: auto;
+        }
+
+        .message-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            font-weight: 600;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+        }
+
+        .message.ai .message-avatar {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--accent);
+        }
+
+        .message-bubble {
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            line-height: 1.7;
+            font-size: 14px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #ffffff;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .message.ai .message-bubble {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 6px;
+            color: var(--text-primary);
+        }
+
+        .message.ai .message-bubble h1,
+        .message.ai .message-bubble h2,
+        .message.ai .message-bubble h3 {
+            margin: 14px 0 8px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .message.ai .message-bubble h1 { font-size: 1.4em; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .message.ai .message-bubble h2 { font-size: 1.2em; }
+        .message.ai .message-bubble h3 { font-size: 1.05em; }
+
+        .message.ai .message-bubble p { margin: 8px 0; }
+
+        .message.ai .message-bubble ul,
+        .message.ai .message-bubble ol {
+            padding-left: 22px;
+            margin: 8px 0;
+        }
+
+        .message.ai .message-bubble li { margin: 4px 0; }
+
+        .message.ai .message-bubble code {
+            background: rgba(99, 102, 241, 0.2);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            color: #a5b4fc;
+        }
+
+        .message.ai .message-bubble pre {
+            background: #0a0a14;
+            padding: 18px;
+            border-radius: var(--radius-sm);
+            overflow-x: auto;
+            margin: 12px 0;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .message.ai .message-bubble pre code {
+            background: none;
+            padding: 0;
+            color: #e2e8f0;
+            font-size: 13px;
+        }
+
+        .copy-code-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            z-index: 2;
+        }
+
+        .copy-code-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .message.ai .message-bubble strong { color: #c7d2fe; }
+        .message.ai .message-bubble em { color: #d1d5db; }
+
+        .message.ai .message-bubble blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            margin: 10px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .message.ai .message-bubble a {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+
+        .message.ai .message-bubble hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 16px 0;
+        }
+
+        .message.ai .message-bubble table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .message.ai .message-bubble th,
+        .message.ai .message-bubble td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .message.ai .message-bubble th {
+            background: rgba(99, 102, 241, 0.15);
+            font-weight: 600;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 6px 0;
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-7px); opacity: 1; }
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin: 8px 0;
+        }
+
+        .warning-message {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin: 8px 0;
+        }
+
+        .retry-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .input-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 6px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        .input-container:focus-within {
+            border-color: var(--border-focus);
+            box-shadow: 0 8px 35px var(--accent-glow);
+        }
+
+        #userInput {
+            width: 100%;
+            padding: 13px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            resize: none;
+            outline: none;
+            max-height: 120px;
+            line-height: 1.5;
+        }
+
+        #userInput::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        .send-btn:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 10px 30px var(--accent-glow-strong);
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 8px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .header {
+                padding: 10px 14px;
+                border-radius: var(--radius);
+            }
+
+            .logo-text {
+                font-size: 16px;
+            }
+
+            .apikey-bar {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 10px 12px;
+            }
+
+            #apiKeyInput {
+                min-width: 100%;
+                order: -1;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="app-container">
+
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">Z</div>
+                <span class="logo-text">Zee Chat</span>
+                <span class="model-badge"></span>
+            </div>
+            <div class="header-right">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="status-text" id="statusText">Ready</span>
+                <button class="btn-icon" onclick="clearChat()" title="Clear Chat">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="apikey-bar">
+            <i class="fa-solid fa-key"></i>
+            <input 
+                type="password" 
+                id="apiKeyInput" 
+                placeholder="Enter your Gemini API Key..."
+                autocomplete="off"
+            >
+            <button class="apikey-save-btn" id="saveKeyBtn" onclick="saveApiKey()">Save Key</button>
+        </div>
+
+        <div class="chat-wrapper" id="chatWrapper">
+            <div class="messages-container" id="messagesContainer">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-message"></i>
+                    </div>
+                    <div class="empty-title">Start a conversation</div>
+                    <div class="empty-subtitle">Enter your API key above, then type a message to begin.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <textarea 
+                id="userInput" 
+                placeholder="Type your message..." 
+                rows="1"
+                onkeydown="handleKeyDown(event)"
+            ></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                <i class="fa-solid fa-arrow-up"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ============ CONFIGURATION ============
+        const MODEL_NAME = 'gemini-2.5-flash';
+        const MAX_RETRIES = 3;
+        const RETRY_DELAY_BASE = 2000;
+        const RATE_LIMIT_COOLDOWN = 15000;
+
+        // ============ STATE ============
+        let apiKey = localStorage.getItem('zee_chat_api_key') || '';
+        let chatHistory = [];
+        let isGenerating = false;
+        let rateLimitUntil = 0;
+        let retryCount = 0;
+
+        // ============ DOM ELEMENTS ============
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveKeyBtn = document.getElementById('saveKeyBtn');
+        const chatWrapper = document.getElementById('chatWrapper');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+
+        // ============ LOAD SAVED API KEY ============
+        if (apiKey) {
+            apiKeyInput.value = apiKey;
+            saveKeyBtn.textContent = 'Saved';
+            saveKeyBtn.classList.add('saved');
+            updateStatus('connected');
+        }
+
+        // ============ PREVENT ZOOM ============
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('gesturechange', (e) => e.preventDefault());
+        document.addEventListener('gestureend', (e) => e.preventDefault());
+        
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // ============ PARTICLES BACKGROUND ============
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.8 + 0.4;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.opacity = Math.random() * 0.4 + 0.08;
+                this.life = Math.random() * 250 + 80;
+                this.maxLife = this.life;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life--;
+                if (this.life <= 0 || this.x < -20 || this.x > canvas.width + 20 || this.y < -20 || this.y > canvas.height + 20) {
+                    this.reset();
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 10;
+                }
+            }
+            draw() {
+                const alpha = (this.life / this.maxLife) * this.opacity;
+                ctx.fillStyle = `rgba(99, 102, 241, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 70; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 130) {
+                        const alpha = (1 - dist / 130) * 0.12;
+                        ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+                        ctx.lineWidth = 0.4;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // ============ UPDATE STATUS ============
+        function updateStatus(status) {
+            switch(status) {
+                case 'connected':
+                    statusDot.style.background = '#22c55e';
+                    statusDot.style.boxShadow = '0 0 8px rgba(34,197,94,0.5)';
+                    statusText.textContent = 'Connected';
+                    break;
+                case 'error':
+                    statusDot.style.background = '#ef4444';
+                    statusDot.style.boxShadow = '0 0 8px rgba(239,68,68,0.5)';
+                    statusText.textContent = 'Error';
+                    break;
+                case 'loading':
+                    statusDot.style.background = '#f59e0b';
+                    statusDot.style.boxShadow = '0 0 8px rgba(245,158,11,0.5)';
+                    statusText.textContent = 'Generating...';
+                    break;
+                case 'retrying':
+                    statusDot.style.background = '#f59e0b';
+                    statusDot.style.boxShadow = '0 0 8px rgba(245,158,11,0.5)';
+                    statusText.textContent = 'Retrying...';
+                    break;
+                case 'waiting':
+                    statusDot.style.background = '#f59e0b';
+                    statusDot.style.boxShadow = '0 0 8px rgba(245,158,11,0.5)';
+                    statusText.textContent = 'Cooling down...';
+                    break;
+                default:
+                    statusDot.style.background = '#6b7280';
+                    statusDot.style.boxShadow = '0 0 8px rgba(107,114,128,0.5)';
+                    statusText.textContent = 'Ready';
+            }
+        }
+
+        // ============ SAVE API KEY ============
+        function saveApiKey() {
+            const key = apiKeyInput.value.trim();
+            if (!key) {
+                apiKeyInput.focus();
+                saveKeyBtn.textContent = 'Enter Key';
+                saveKeyBtn.classList.add('error');
+                setTimeout(() => {
+                    saveKeyBtn.textContent = 'Save Key';
+                    saveKeyBtn.classList.remove('error');
+                }, 1500);
+                return;
+            }
+            
+            apiKey = key;
+            localStorage.setItem('zee_chat_api_key', key);
+            saveKeyBtn.textContent = 'Saved';
+            saveKeyBtn.classList.add('saved');
+            saveKeyBtn.classList.remove('error');
+            updateStatus('connected');
+            
+            setTimeout(() => {
+                saveKeyBtn.textContent = 'Save Key';
+                saveKeyBtn.classList.remove('saved');
+            }, 2000);
+        }
+
+        apiKeyInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveApiKey();
+            }
+        });
+
+        // ============ AUTO RESIZE TEXTAREA ============
+        userInput.addEventListener('input', () => {
+            userInput.style.height = 'auto';
+            userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
+        });
+
+        // ============ KEY HANDLER ============
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // ============ CLEAR CHAT ============
+        function clearChat() {
+            chatHistory = [];
+            retryCount = 0;
+            rateLimitUntil = 0;
+            messagesContainer.innerHTML = `
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-message"></i>
+                    </div>
+                    <div class="empty-title">Start a conversation</div>
+                    <div class="empty-subtitle">Enter your API key above, then type a message to begin.</div>
+                </div>
+            `;
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            updateStatus('ready');
+        }
+
+        // ============ DELAY HELPER ============
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // ============ MAKE API REQUEST WITH RETRIES ============
+        async function makeApiRequest(contents, retryAttempt = 0) {
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:streamGenerateContent?alt=sse&key=${apiKey}`;
+
+            const requestBody = {
+                contents: contents,
+                systemInstruction: {
+                    parts: [{
+                        text: `You are Zee Chat, a helpful AI assistant powered by Gemini 2.5 Flash.
+- Use markdown formatting for structured responses
+- Include code blocks with language tags (e.g. \`\`\`python)
+- Use bullet points and numbered lists for clarity
+- Be concise but thorough
+- Think step by step for complex problems`
+                    }]
+                },
+                generationConfig: {
+                    temperature: 0.7,
+                    topP: 0.95,
+                    topK: 40,
+                    maxOutputTokens: 4096,
+                }
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (response.status === 429) {
+                if (retryAttempt < MAX_RETRIES) {
+                    const waitTime = RETRY_DELAY_BASE * Math.pow(2, retryAttempt);
+                    const waitSeconds = Math.round(waitTime / 1000);
+                    
+                    updateStatus('retrying');
+                    
+                    return {
+                        retry: true,
+                        waitTime: waitTime,
+                        message: `Rate limit reached. Retrying in ${waitSeconds} seconds... (Attempt ${retryAttempt + 1}/${MAX_RETRIES})`
+                    };
+                } else {
+                    rateLimitUntil = Date.now() + RATE_LIMIT_COOLDOWN;
+                    updateStatus('waiting');
+                    
+                    return {
+                        retry: false,
+                        error: true,
+                        message: `Rate limit exceeded after ${MAX_RETRIES} attempts. Please wait ${RATE_LIMIT_COOLDOWN / 1000} seconds before trying again.`,
+                        cooldown: RATE_LIMIT_COOLDOWN
+                    };
+                }
+            }
+
+            if (!response.ok) {
+                let errorMsg = `Error ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    const err = errorData.error;
+                    
+                    if (response.status === 400) {
+                        if (err?.message?.includes('API key not valid')) {
+                            errorMsg = 'Invalid API Key. Get a valid key from Google AI Studio.';
+                            apiKey = '';
+                            localStorage.removeItem('zee_chat_api_key');
+                            apiKeyInput.value = '';
+                            updateStatus('error');
+                        } else if (err?.message?.includes('deprecated') || err?.message?.includes('no longer available')) {
+                            errorMsg = 'Model deprecated. Contact developer for latest model update.';
+                        } else if (err?.message) {
+                            errorMsg = err.message;
+                        }
+                    } else if (response.status === 403) {
+                        errorMsg = 'Access denied. Check API key permissions in Google Cloud Console.';
+                    } else if (response.status === 404) {
+                        errorMsg = 'Model not found. Using latest model: ' + MODEL_NAME;
+                    } else if (err?.message) {
+                        errorMsg = err.message;
+                    }
+                } catch (e) {
+                    const rawText = await response.text().catch(() => '');
+                    if (rawText) errorMsg = rawText.substring(0, 200);
+                }
+                
+                return {
+                    retry: false,
+                    error: true,
+                    message: errorMsg
+                };
+            }
+
+            return {
+                retry: false,
+                error: false,
+                response: response
+            };
+        }
+
+        // ============ SEND MESSAGE ============
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message || isGenerating) return;
+
+            if (rateLimitUntil > Date.now()) {
+                const remainingSeconds = Math.ceil((rateLimitUntil - Date.now()) / 1000);
+                showSystemMessage(
+                    `Please wait ${remainingSeconds} seconds before sending another message. Free API limit applies.`,
+                    'warning'
+                );
+                return;
+            }
+
+            if (!apiKey) {
+                apiKeyInput.focus();
+                saveKeyBtn.textContent = 'Enter Key';
+                saveKeyBtn.classList.add('error');
+                setTimeout(() => {
+                    saveKeyBtn.textContent = 'Save Key';
+                    saveKeyBtn.classList.remove('error');
+                }, 2000);
+                return;
+            }
+
+            const empty = document.getElementById('emptyState');
+            if (empty) empty.remove();
+
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            isGenerating = true;
+            sendBtn.disabled = true;
+            retryCount = 0;
+            updateStatus('loading');
+
+            addMessage('user', message);
+            chatHistory.push({ role: 'user', text: message });
+
+            const aiMsgId = 'ai-msg-' + Date.now();
+            const aiBubble = addMessage('ai', '', aiMsgId);
+            const bubble = aiBubble.querySelector('.message-bubble');
+            
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            bubble.appendChild(typingIndicator);
+
+            scrollToBottom();
+
+            try {
+                const contents = chatHistory.map(msg => ({
+                    role: msg.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.text }]
+                }));
+
+                let requestResult;
+                let attempt = 0;
+
+                while (true) {
+                    requestResult = await makeApiRequest(contents, attempt);
+
+                    if (requestResult.error && !requestResult.retry) {
+                        throw new Error(requestResult.message);
+                    }
+
+                    if (requestResult.retry) {
+                        bubble.innerHTML = `<div class="warning-message">${requestResult.message}</div>`;
+                        scrollToBottom();
+                        
+                        await delay(requestResult.waitTime);
+                        attempt++;
+                        continue;
+                    }
+
+                    break;
+                }
+
+                bubble.innerHTML = '';
+
+                const reader = requestResult.response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.startsWith('data: ')) {
+                            const jsonStr = trimmedLine.slice(6);
+                            if (!jsonStr || jsonStr === '[DONE]') continue;
+                            try {
+                                const data = JSON.parse(jsonStr);
+                                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                                if (text) {
+                                    fullResponse += text;
+                                    bubble.innerHTML = renderMarkdown(fullResponse);
+                                    scrollToBottom();
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+
+                if (fullResponse) {
+                    chatHistory.push({ role: 'model', text: fullResponse });
+                    updateStatus('connected');
+                    retryCount = 0;
+                } else {
+                    bubble.innerHTML = '<div class="error-message">No response received. Please try again.</div>';
+                    updateStatus('error');
+                }
+
+            } catch (error) {
+                bubble.innerHTML = `<div class="error-message"><strong>Error:</strong> ${escapeHtml(error.message)}</div>`;
+                
+                if (error.message.includes('Rate limit')) {
+                    updateStatus('waiting');
+                } else {
+                    updateStatus('error');
+                }
+                console.error('Gemini API Error:', error);
+            }
+
+            isGenerating = false;
+            sendBtn.disabled = false;
+            userInput.focus();
+        }
+
+        // ============ SHOW SYSTEM MESSAGE ============
+        function showSystemMessage(text, type = 'error') {
+            const empty = document.getElementById('emptyState');
+            if (empty) empty.remove();
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message ai';
+            msgDiv.style.maxWidth = '100%';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = '!';
+            avatar.style.background = type === 'warning' ? 'rgba(245,158,11,0.2)' : 'rgba(239,68,68,0.2)';
+            avatar.style.border = type === 'warning' ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(239,68,68,0.3)';
+            avatar.style.color = type === 'warning' ? '#fcd34d' : '#fca5a5';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = `<div class="${type === 'warning' ? 'warning-message' : 'error-message'}">${escapeHtml(text)}</div>`;
+
+            msgDiv.appendChild(avatar);
+            msgDiv.appendChild(bubble);
+            messagesContainer.appendChild(msgDiv);
+            
+            scrollToBottom();
+            
+            setTimeout(() => {
+                msgDiv.style.opacity = '0';
+                msgDiv.style.transition = 'opacity 0.5s';
+                setTimeout(() => msgDiv.remove(), 500);
+            }, 6000);
+        }
+
+        // ============ ADD MESSAGE ============
+        function addMessage(role, text, id = '') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            if (id) messageDiv.id = id;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? 'U' : 'Z';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = role === 'user' ? escapeHtml(text) : renderMarkdown(text);
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(bubble);
+            messagesContainer.appendChild(messageDiv);
+
+            scrollToBottom();
+            return messageDiv;
+        }
+
+        // ============ MARKDOWN RENDERER ============
+        function renderMarkdown(text) {
+            if (!text) return '';
+
+            let html = escapeHtml(text);
+
+            html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+                const langLabel = lang || '';
+                const cleanCode = code.trim();
+                const escapedCode = cleanCode
+                    .replace(/\\/g, '\\\\')
+                    .replace(/`/g, '\\`')
+                    .replace(/\$/g, '\\$')
+                    .replace(/\n/g, '\\n')
+                    .replace(/\r/g, '')
+                    .replace(/'/g, "\\'");
+                return `<pre><button class="copy-code-btn" onclick="copyCode(this, '${escapedCode}')">Copy</button><code class="language-${langLabel}">${cleanCode}</code></pre>`;
+            });
+
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+            html = html.replace(/^---$/gm, '<hr>');
+            html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+            html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/\n\n+/g, '</p><p>');
+            html = html.replace(/\n/g, '<br>');
+
+            if (!html.startsWith('<') && html.trim()) {
+                html = '<p>' + html + '</p>';
+            }
+
+            html = html.replace(/<p><(h[1-4]|ul|ol|pre|blockquote|table|hr)/g, '<$1');
+            html = html.replace(/<\/(h[1-4]|ul|ol|pre|blockquote|table)><\/p>/g, '</$1>');
+
+            return html;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // ============ COPY CODE ============
+        function copyCode(btn, encodedCode) {
+            const decoded = encodedCode
+                .replace(/\\n/g, '\n')
+                .replace(/\\`/g, '`')
+                .replace(/\\$/g, '$')
+                .replace(/\\\\/g, '\\')
+                .replace(/\\'/g, "'");
+            
+            navigator.clipboard.writeText(decoded).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied';
+                btn.style.background = 'rgba(34,197,94,0.2)';
+                btn.style.borderColor = '#22c55e';
+                btn.style.color = '#22c55e';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 1800);
+            }).catch(() => {
+                btn.textContent = 'Failed';
+                setTimeout(() => { btn.textContent = 'Copy'; }, 1500);
+            });
+        }
+
+        // ============ SCROLL TO BOTTOM ============
+        function scrollToBottom() {
+            requestAnimationFrame(() => {
+                chatWrapper.scrollTop = chatWrapper.scrollHeight;
+            });
+        }
+
+        // ============ INIT ============
+        if (apiKey) {
+            updateStatus('connected');
+        }
+        apiKeyInput.focus();
+    </script>
+</body>
+</html>
